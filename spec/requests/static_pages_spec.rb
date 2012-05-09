@@ -7,7 +7,7 @@ describe "StaticPages" do
   describe "Home Page" do
 
     before :each do
-      visit '/static_pages/home'
+      visit root_path
     end
 
     it "should have the h1 'Sample App'" do
@@ -27,7 +27,7 @@ describe "StaticPages" do
   describe "Help Page" do
 
     before :each do
-      visit '/static_pages/help'
+      visit help_path
     end
 
     it "should have the h1 'Help'" do
@@ -43,7 +43,7 @@ describe "StaticPages" do
   describe "About Page" do
 
     before :each do
-      visit '/static_pages/about'
+      visit about_path
     end
 
     it "should have the h1 'About Us'" do
@@ -59,7 +59,7 @@ describe "StaticPages" do
   describe "Contact Page" do
 
     before :each do
-      visit '/static_pages/contact'
+      visit contact_path
     end
 
     it "should have the h1 'Contact'" do
