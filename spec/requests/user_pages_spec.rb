@@ -20,8 +20,23 @@ describe "User pages" do
 			before(:all) { 30.times { FactoryGirl.create(:user) } }
 			after(:all) { User.delete_all }
 
+			let(:first_page) { User.paginate(page: 1) }
+			let(:second_page) { User.paginate(page: 2) }
+
 			it { should have_link('Next') }
 			its(:html) { should match('>2</a>') }
+
+			it "should list the first page of users" do
+				first_page.each do |user|
+					page.should have_selector("li", text: user.name)
+				end
+			end
+
+			it "should not list the second page of users" do
+				second_page.each do |user|
+					page.should_not have_selector("li", text: user.name)
+				end
+			end
 
 			it "should list each user" do
 				User.all[0..2].each do |user|
@@ -46,7 +61,14 @@ describe "User pages" do
 					expect { click_link('delete') }.to change(User, :count).by(-1)
 				end
 				it { should_not have_link('delete', href: user_path(admin)) }
+	
+				describe "admin should not be able to delete self" do
+					let(:pre_count) { User.count }
+					before { delete user_path(admin) }
+					specify { User.count.should == pre_count }
+				end
 			end
+
 		end
 	end
 
@@ -95,7 +117,7 @@ describe "User pages" do
 				fill_in "Name",			with: "Example User"
 				fill_in "Email",		with: "user@example.com"
 				fill_in "Password",		with: "foobar"
-				fill_in "Password confirmation", with: "foobar"
+				fill_in "Confirm password", with: "foobar"
 			end
 
 			it "should create a user" do
@@ -140,7 +162,7 @@ describe "User pages" do
 				fill_in "Name",						with: new_name
 				fill_in "Email",					with: new_email
 				fill_in "Password",					with: user.password
-				fill_in "Password confirmation",	with: user.password
+				fill_in "Confirm password",	with: user.password
 				click_button "Save changes"
 			end
 
