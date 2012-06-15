@@ -19,9 +19,9 @@ describe "StaticPages" do
 
     describe "for signed-in users" do
       let(:user) { FactoryGirl.create(:user) }
+      let(:other_user) { FactoryGirl.create(:user) }
       before do
-        FactoryGirl.create(:micropost, user: user, content: "Lorem ipsum")
-        FactoryGirl.create(:micropost, user: user, content: "Dolor sit amet")
+        FactoryGirl.create(:micropost, user: user)
         visit signin_path
         fake_sign_in user
         visit root_path
@@ -30,6 +30,56 @@ describe "StaticPages" do
       it "should render the user's feed" do
         user.feed.each do |item|
           page.should have_selector("li##{item.id}", text: item.content)
+        end
+      end
+
+      describe "should not have delete link for other users posts" do
+        before do
+          FactoryGirl.create(:micropost, user: other_user)
+          visit user_path(other_user)
+        end
+        it { should_not have_link("delete") }
+      end
+
+      describe "with one micropost" do
+        it { should have_selector("span", text: "micropost") }
+        it { should_not have_selector("span", text: "microposts") }
+        it "should have one list item" do
+          page.all(".microposts li").count.should == 1
+        end
+      end
+
+      describe "with two microposts" do
+        before do
+          FactoryGirl.create(:micropost, user: user)
+          visit root_path
+        end
+
+        it { should have_selector("span", text: "micropost") }
+        it "should have two list items" do
+          page.all(".microposts li").count.should == 2
+        end
+      end
+
+      describe "paginate" do
+        before(:all) { 60.times { FactoryGirl.create(:micropost, user: user) } }
+
+        let(:first_page) { Micropost.paginate(page: 1) }
+        let(:second_page) { Micropost.paginate(page: 2) }
+
+        it { should have_link('Next') }
+        its(:html) { should match('>2</a>') }
+
+        it "should list the first page of users" do
+          first_page.each do |micropost|
+            page.should have_selector("li", text: micropost.content)
+          end
+        end
+
+        it "should not list the second page of users" do
+          second_page.each do |micropost|
+            page.should_not have_selector("li", text: micropost.content)
+          end
         end
       end
     end
