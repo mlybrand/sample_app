@@ -33,6 +33,16 @@ describe "StaticPages" do
         end
       end
 
+      describe "follower/following counts" do
+        before do
+          other_user.follow!(user)
+          visit root_path
+        end
+
+        it { should have_link("0 following", href: following_user_path(user)) }
+        it { should have_link("1 follower", href: followers_user_path(user)) }
+      end
+
       describe "should not have delete link for other users posts" do
         before do
           FactoryGirl.create(:micropost, user: other_user)
