@@ -9,6 +9,7 @@ describe User do
 	subject { @user }
 
 	it { should respond_to(:name) }
+	it { should respond_to(:username)}
 	it { should respond_to(:email) }
 	it { should respond_to(:password_digest) }
 	it { should respond_to(:password) }
@@ -188,11 +189,34 @@ describe User do
 			its(:followers) { should include(@user) }
 		end
 
+		describe "other user following user" do
+			before { other_user.follow!(@user) }
+
+			describe "from user perspective" do
+				its(:followers) { should include(other_user) }
+			end
+
+			describe "from other user perspective" do
+				subject { other_user }
+
+				its(:followed_users) { should include(@user) }
+			end
+
+			describe "when user destroyed" do
+				before { @user.destroy }
+				subject { other_user }
+				its(:followers) { should_not include(@user) }
+				its(:followed_users) {should_not include(@user)  }
+			end
+		end
+
 		describe "and unfollowing" do
 			before { @user.unfollow!(other_user) }
 
 			it { should_not be_following(other_user) }
 			its(:followed_users) { should_not include(other_user) }
 		end
+
 	end
+
 end
